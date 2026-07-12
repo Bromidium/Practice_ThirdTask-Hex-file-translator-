@@ -44,14 +44,16 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
-
-    // для отладки, убрать
-    if (input) printf("filr (-i): %s\n", input);
-    if (dir) printf("dir (-d): %s\n", dir);
-    printf("move (-o): %ld\n", offset);
-    printf("size (-l): %ld\n", size);
-    printf("piece size (-g): %d\n", chunk_size);
-    printf("pieces in str (-n): %d\n", width);
-
-    return 0;
+    // обработка
+    if (input) {
+        return process_file(input, offset, size, chunk_size, width);
+    }
+    else if (dir) {
+        fprintf(stderr, "Directory processing\n");
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Specify -i or -d\n");
+        return 1;
+    }
 }
