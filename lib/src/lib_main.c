@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h> 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 const char hex_chars[] = "0123456789ABCDEF";
 int process_file(const char* filename, long offset, long size, int chunk_size, int chunks_per_line) {
@@ -98,4 +101,38 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
     free(chunk_buf);
     fclose(f);
     return 0;
+}
+
+// обход директории
+int process_directory(const char* dir, long offset, long size, int chunk_size, int width) {
+#ifdef _WIN32
+    // Формируем путь для поиска всех файлов в папке
+    char search_path[MAX_PATH];
+    snprintf(search_path, MAX_PATH, "%s\\*", dir);
+
+    WIN32_FIND_DATAA find_data;
+    HANDLE hFind = FindFirstFileA(search_path, &find_data);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "Error: failed to open directory %s\n", dir);
+        return -1;
+    }
+    // цикл по всем найденным элементам
+    do {
+        // пропускаем директории, обрабатываем только файлы
+        if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            char file_path[MAX_PATH];
+            snprintf(file_path, MAX_PATH, "%s\\%s", dir, find_data.cFileName);
+            printf("file: %s\n", file_path);
+            // вызываем для каждого файла
+            process_file(file_path, offset, size, chunk_size, width);
+        }
+    } while (FindNextFileA(hFind, &find_data));
+
+    FindClose(hFind);
+    return 0;
+#else
+    // если вдруг на Linux
+    fprintf(stderr, "Windows only\n");
+    return -1;
+#endif
 }

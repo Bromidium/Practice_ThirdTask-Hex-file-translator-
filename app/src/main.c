@@ -44,16 +44,15 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
-    // обработка
+    // запуск обработки
     if (input) {
         return process_file(input, offset, size, chunk_size, width);
     }
     else if (dir) {
-        fprintf(stderr, "Directory processing\n");
-        return 1;
+        return process_directory(dir, offset, size, chunk_size, width);
     }
     else {
-        fprintf(stderr, "Specify -i or -d\n");
+        fprintf(stderr, "Specify -i or directory -d\n");
         return 1;
     }
 }

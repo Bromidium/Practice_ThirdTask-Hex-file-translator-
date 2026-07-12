@@ -10,7 +10,7 @@ lib_main.h - заголовочный файл модуля lib_main.c.
 #define LIB_MAIN_H
 
 // обработка и вывод одного файла
-// return 0 при успехе, -1 при ошибке
-int process_file(const char* filename, long offset, long size, int chunk_size, int chunks_per_line);
-
+int process_file(const char* filename, long offset, long size, int chunk_size, int width);
+// обработка всех файлов в директории
+int process_directory(const char* dir, long offset, long size, int chunk_size, int width);
 #endif // LIB_MAIN_H
