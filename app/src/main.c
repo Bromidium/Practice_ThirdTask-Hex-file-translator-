@@ -44,6 +44,29 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
+    // проверка на несовмесимость флагов
+    if (input && dir) {
+        fprintf(stderr, "Error: сannot specify both -i and -d at the same time\n");
+        return 1;
+    }
+    // валидация числовых значений
+    if (offset < 0) {
+        fprintf(stderr, "Error: -o offset must be >= 0\n");
+        return 1;
+    }
+    if (size < -1) {
+        fprintf(stderr, "Error: -l must be >= -1\n");
+        return 1;
+    }
+    if (chunk_size < 1) {
+        fprintf(stderr, "Error: -g must be >= 1\n");
+        return 1;
+    }
+    if (width < 1) {
+        fprintf(stderr, "Error: -n must be >= 1\n");
+        return 1;
+    }
+
     // запуск обработки
     if (input) {
         return process_file(input, offset, size, chunk_size, width);
@@ -52,7 +75,10 @@ int main(int argc, char** argv) {
         return process_directory(dir, offset, size, chunk_size, width);
     }
     else {
-        fprintf(stderr, "Specify -i or directory -d\n");
+        fprintf(stderr, "specify -i or -d\n");
         return 1;
     }
+
+    
+
 }
