@@ -61,7 +61,16 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
         if (bytes_to_read <= 0) break;
 
         size_t read_bytes = fread(buffer, 1, bytes_to_read, f);
-        if (read_bytes == 0) break;
+        if (read_bytes == 0) {
+            if (ferror(f)) {
+                fprintf(stderr, "Error: read error in file %s\n", filename);
+                free(buffer);
+                free(chunk_buf);
+                fclose(f);
+                return -1;
+            }
+            break;
+        }
         printf("%08lx  ", current_offset);
         // вывод кусочков
         for (int i = 0; i < chunks_per_line; i++) {

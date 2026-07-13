@@ -9,6 +9,10 @@ main.c - главный модуль программы.
 #include <stdlib.h>
 #include "getopt.h"
 #include "lib_main.h"
+#define DEFAULT_OFFSET 0
+#define DEFAULT_SIZE -1
+#define DEFAULT_CHUNK_SIZE 1
+#define DEFAULT_WIDTH 16
 
 void print_help(void) {
     printf("  -i FILE   name input file\n");
@@ -23,10 +27,10 @@ void print_help(void) {
 int main(int argc, char** argv) {
     char* input = NULL;
     char* dir = NULL;
-    long offset = 0;
-    long size = -1; // -1 значит вывести все
-    int chunk_size = 1;
-    int width = 16;
+    long offset = DEFAULT_OFFSET;
+    long size = DEFAULT_SIZE;
+    int chunk_size = DEFAULT_CHUNK_SIZE;
+    int width = DEFAULT_WIDTH;
     int opt;
     // cтрока опций для getopt, буква и двоеточие - опция требует аргумент
     while ((opt = getopt(argc, argv, "i:o:l:g:n:d:h")) != -1) {
