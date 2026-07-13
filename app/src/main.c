@@ -10,6 +10,16 @@ main.c - главный модуль программы.
 #include "getopt.h"
 #include "lib_main.h"
 
+void print_help(void) {
+    printf("  -i FILE   name input file\n");
+    printf("  -d DIR    directory to crawl\n");
+    printf("  -o OFFSET offset from the beginning of the file (default: 0)\n");
+    printf("  -l SIZE   number of bytes to output (default: all)\n");
+    printf("  -g SIZE   chunk size in bytes (default: 1)\n");
+    printf("  -n COUNT  number of pieces per line (default: 16)\n");
+    printf("  -h        help\n");
+}
+
 int main(int argc, char** argv) {
     char* input = NULL;
     char* dir = NULL;
@@ -19,7 +29,7 @@ int main(int argc, char** argv) {
     int width = 16;
     int opt;
     // cтрока опций для getopt, буква и двоеточие - опция требует аргумент
-    while ((opt = getopt(argc, argv, "i:o:l:g:n:d:")) != -1) {
+    while ((opt = getopt(argc, argv, "i:o:l:g:n:d:h")) != -1) {
         switch (opt) {
         case 'i':
             input = optarg;
@@ -39,6 +49,9 @@ int main(int argc, char** argv) {
         case 'd':
             dir = optarg;
             break;
+        case 'h':
+            print_help();
+            return 0;
         default:
             fprintf(stderr, "Error: uknown option\n");
             return 1;
@@ -46,7 +59,8 @@ int main(int argc, char** argv) {
     }
     // проверка на несовмесимость флагов
     if (input && dir) {
-        fprintf(stderr, "Error: сannot specify both -i and -d at the same time\n");
+        fprintf(stderr, "Error: cannot specify both -i and -d at the same time\n");
+        print_help();
         return 1;
     }
     // валидация числовых значений
@@ -76,6 +90,7 @@ int main(int argc, char** argv) {
     }
     else {
         fprintf(stderr, "specify -i or -d\n");
+        print_help();
         return 1;
     }
 
