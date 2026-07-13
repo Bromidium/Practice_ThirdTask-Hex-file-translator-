@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h> 
+#define OFFSET_WIDTH 8
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -71,7 +72,7 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
             }
             break;
         }
-        printf("%08lx  ", current_offset);
+        printf("%0*lx  ", OFFSET_WIDTH, current_offset);
         // вывод кусочков
         for (int i = 0; i < chunks_per_line; i++) {
             int chunk_start = i * chunk_size;
