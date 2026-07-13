@@ -14,15 +14,29 @@
 #endif
 
 const char hex_chars[] = "0123456789ABCDEF";
+
+static void to_hex(unsigned char byte, char* out) {
+    out[0] = hex_chars[(byte >> 4) & 0x0F];
+    out[1] = hex_chars[byte & 0x0F];
+    out[2] = '\0';
+}
+
+static char get_printable(unsigned char byte) {
+    if (isprint(byte)) {
+        return (char)byte;
+    }
+    return '*';
+}
+
 int process_file(const char* filename, long offset, long size, int chunk_size, int chunks_per_line) {
     FILE* f = fopen(filename, "rb");
     if (!f) {
-        fprintf(stderr, "Ошибка: не удалось открыть файл %s\n", filename);
+        fprintf(stderr, "Error: failed to open file %s\n", filename);
         return -1;
     }
 
     if (fseek(f, offset, SEEK_SET) != 0) {
-        fprintf(stderr, "Ошибка: не удалось перейти к смещению %ld\n", offset);
+        fprintf(stderr, "Error: failed to navigate to offset %ld\n", offset);
         fclose(f);
         return -1;
     }
@@ -31,7 +45,7 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
     unsigned char* buffer = (unsigned char*)malloc(bytes_per_line);
     unsigned char* chunk_buf = (unsigned char*)malloc(chunk_size);
     if (!buffer || !chunk_buf) {
-        fprintf(stderr, "Ошибка: не удалось выделить память\n");
+        fprintf(stderr, "Error: failed to allocate memory\n");
         fclose(f);
         free(buffer);
         free(chunk_buf);
@@ -68,23 +82,18 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
             // заполнение chunk_buf нулями, копируем реальные байты в начало
             memset(chunk_buf, 0, chunk_size);
             memcpy(chunk_buf, &buffer[chunk_start], actual);
-
             // байты кусочка в little-endian
             for (int j = chunk_size - 1; j >= 0; j--) {
-                unsigned char b = chunk_buf[j];
-                printf("%c%c", hex_chars[(b >> 4) & 0x0F], hex_chars[b & 0x0F]);
+                char hex[3];
+                to_hex(chunk_buf[j], hex);
+                printf("%s", hex);
             }
             printf(" "); 
         }
         if (chunk_size == 1) {
             printf("| ");
             for (size_t i = 0; i < read_bytes; i++) {
-                if (isprint(buffer[i])) {
-                    printf("%c", buffer[i]);
-                }
-                else {
-                    printf("*");
-                }
+                printf("%c", get_printable(buffer[i]));
             }
         }
         printf("\n");
@@ -106,7 +115,7 @@ int process_file(const char* filename, long offset, long size, int chunk_size, i
 // обход директории
 int process_directory(const char* dir, long offset, long size, int chunk_size, int width) {
 #ifdef _WIN32
-    // Формируем путь для поиска всех файлов в папке
+    // путь для поиска всех файлов в папке
     char search_path[MAX_PATH];
     snprintf(search_path, MAX_PATH, "%s\\*", dir);
 
@@ -118,12 +127,11 @@ int process_directory(const char* dir, long offset, long size, int chunk_size, i
     }
     // цикл по всем найденным элементам
     do {
-        // пропускаем директории, обрабатываем только файлы
+        // пропуск директори1, только файлы
         if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             char file_path[MAX_PATH];
             snprintf(file_path, MAX_PATH, "%s\\%s", dir, find_data.cFileName);
             printf("file: %s\n", file_path);
-            // вызываем для каждого файла
             process_file(file_path, offset, size, chunk_size, width);
         }
     } while (FindNextFileA(hFind, &find_data));
