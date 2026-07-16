@@ -67,7 +67,15 @@ static void print_dump_line(long offset,
     putchar('\n');
 }
 
-int is_valid_number(const char* str) { return 1; }
+int is_valid_number(const char* str) {
+    if (*str == '-') str++;
+    if (*str == '\0') return 0;
+    while (*str) {
+        if (*str < '0' || *str > '9') return 0;
+        str++;
+    }
+    return 1;
+}
 
 void hex_params_init(HexParams* params) {
     params->offset = 0;
