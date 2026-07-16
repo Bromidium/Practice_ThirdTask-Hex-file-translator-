@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // Максимальные размеры для статических массивов (защита от переполнения стека)
 #define MAX_CHUNK_SIZE      256
@@ -127,4 +129,29 @@ int process_file(const char* filename, const HexParams* params) {
     return 0;
 }
 
-int process_directory(const char* dir_path, const HexParams* params) { return 0; }
+int process_directory(const char* dir_path, const HexParams* params) {
+    DIR* dir = opendir(dir_path);
+    if (!dir) {
+        perror(dir_path);
+        return -1;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, entry->d_name);
+
+        struct stat st;
+        if (stat(full_path, &st) == 0 && S_ISREG(st.st_mode)) {
+            printf("\n--- File: %s ---\n", full_path);
+            process_file(full_path, params);
+        }
+    }
+
+    closedir(dir);
+    return 0;
+}
